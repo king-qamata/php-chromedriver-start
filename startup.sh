@@ -41,4 +41,5 @@ fi
 
 # Start the Azure startup process (nginx and PHP-FPM)
 echo "Starting Azure services..."
-exec /opt/startup/startup.sh
+#exec /opt/startup/startup.sh
+service nginx reload
