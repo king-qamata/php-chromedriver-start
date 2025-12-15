@@ -23,7 +23,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # Install additional system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget unzip curl procps net-tools \
+    wget unzip jq curl procps net-tools \
     libnss3 libgconf-2-4 libxi6 libgtk-3-0 \
     libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 \
     xvfb \
