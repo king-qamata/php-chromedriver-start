@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: php-chrome-webapp-nginx
+  IMAGE_NAME: php-chrome-start-nginx
   REGISTRY_NAME: agplcontainer
   TAG: latest
   PLATFORM: linux/amd64
