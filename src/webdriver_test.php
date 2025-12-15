@@ -15,7 +15,6 @@ putenv('DISPLAY=:99');
 class ChromeDriverManager
 {
     private $driver = null;
-    private $service = null;
     
     public function startBrowser()
     {
@@ -57,16 +56,12 @@ class ChromeDriverManager
             
             echo "Starting ChromeDriver service...\n";
             
-            // Use ChromeDriver::start() to create a new instance
-            // This will start ChromeDriver on a random available port
-            $this->service = ChromeDriver::start($capabilities);
+            // ChromeDriver::start() returns the driver instance directly
+            $this->driver = ChromeDriver::start($capabilities, null, ['port' => 0]);
             
-            // Get the actual ChromeDriver instance
-            $this->driver = $this->service->getDriver();
-            
-            // Get the port ChromeDriver is running on
-            $port = parse_url($this->service->getURL(), PHP_URL_PORT);
-            echo "✓ ChromeDriver started successfully on port: $port\n";
+            // Get the URL (includes the port)
+            $url = $this->driver->getCommandExecutor()->getAddressOfRemoteServer();
+            echo "✓ ChromeDriver started successfully at: $url\n";
             
             return $this->driver;
             
@@ -82,11 +77,6 @@ class ChromeDriverManager
         return $this->driver;
     }
     
-    public function getServiceURL()
-    {
-        return $this->service ? $this->service->getURL() : null;
-    }
-    
     public function cleanup()
     {
         echo "Cleaning up resources...\n";
@@ -100,17 +90,6 @@ class ChromeDriverManager
                 echo "⚠ Could not close browser cleanly: " . $e->getMessage() . "\n";
             }
             $this->driver = null;
-        }
-        
-        // Stop service
-        if ($this->service) {
-            try {
-                $this->service->stop();
-                echo "✓ ChromeDriver service stopped\n";
-            } catch (Exception $e) {
-                echo "⚠ Could not stop service cleanly: " . $e->getMessage() . "\n";
-            }
-            $this->service = null;
         }
         
         // Clean up profile directories older than 1 hour
@@ -188,7 +167,7 @@ try {
     }
     
     // Additional cleanup for any orphaned processes
-    $this->killOrphanedProcesses();
+    killOrphanedProcesses();
     
     echo "=== Test finished ===\n";
 }
