@@ -44,9 +44,27 @@ RUN JSON_URL="https://googlechromelabs.github.io/chrome-for-testing/last-known-g
     chmod +x /usr/local/bin/chromedriver && \
     rm -rf /tmp/*
 
-# Verify installations
+# Install Firefox
+RUN apt-get -y install firefox-esr
+
+# Install Geckodriver
+RUN LATEST_VERSION=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")') && \
+    wget -q "https://github.com/mozilla/geckodriver/releases/download/${LATEST_VERSION}/geckodriver-${LATEST_VERSION}-linux64.tar.gz" && \
+    tar -xzf geckodriver-*.tar.gz && \
+    chmod +x geckodriver && \
+    mv geckodriver /usr/local/bin/ && \
+    rm geckodriver-*.tar.gz
+
+# Create Firefox profile directory with correct ownership
+RUN mkdir -p /tmp/firefox-profiles && \
+    chmod -R 777 /tmp/firefox-profiles && \
+    chown -R www-data:www-data /tmp/firefox-profiles
+
+    # Verify installations
 RUN echo "Chrome version:" && google-chrome --version && \
-    echo "ChromeDriver version:" && chromedriver --version
+    echo "ChromeDriver version:" && chromedriver --version \
+    echo "Firefox version:" && firefox --version && \
+    echo "Geckodriver version:" && geckodriver --version
 
 # Create directories and set proper permissions
 RUN mkdir -p /tmp/chrome-profiles && \

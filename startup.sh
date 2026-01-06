@@ -1,5 +1,52 @@
 #!/bin/bash
 
+# Firefox specific setup
+echo "=== Setting up Firefox/Geckodriver ==="
+
+# Create Firefox profile directory
+mkdir -p /tmp/firefox-profiles
+chmod -R 777 /tmp/firefox-profiles
+chown -R www-data:www-data /tmp/firefox-profiles 2>/dev/null || true
+
+# Kill any existing geckodriver processes
+pkill -f geckodriver 2>/dev/null || true
+sleep 2
+
+# Start Geckodriver as www-data user (not root)
+echo "Starting Geckodriver as www-data user..."
+su -s /bin/sh -c "/usr/local/bin/geckodriver --port=4444 --log trace > /home/LogFiles/geckodriver.log 2>&1 &" www-data
+
+# Wait for Geckodriver to start
+echo "Waiting for Geckodriver to start..."
+for i in {1..10}; do
+    if pgrep -f "geckodriver" > /dev/null; then
+        echo "Geckodriver process is running"
+        
+        if netstat -tuln 2>/dev/null | grep -q ":4444" || ss -tuln 2>/dev/null | grep -q ":4444"; then
+            echo "Port 4444 is listening"
+            
+            if curl -s http://localhost:4444/status > /dev/null; then
+                echo "✓ Geckodriver started successfully on port 4444"
+                break
+            fi
+        fi
+    fi
+    
+    if [ $i -eq 10 ]; then
+        echo "❌ Geckodriver failed to start after 10 attempts"
+        if [ -f /home/LogFiles/geckodriver.log ]; then
+            echo "Last 10 lines of Geckodriver log:"
+            tail -10 /home/LogFiles/geckodriver.log
+        fi
+    else
+        echo "Attempt $i/10: Waiting for geckodriver..."
+        sleep 3
+    fi
+done
+
+echo "=== Firefox setup completed ==="
+
+
 # Set environment variables for Chrome
 export HOME=/tmp/www-data
 export XDG_CONFIG_HOME=/tmp/www-data/.config
