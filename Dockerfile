@@ -48,12 +48,13 @@ RUN JSON_URL="https://googlechromelabs.github.io/chrome-for-testing/last-known-g
 RUN apt-get -y install firefox-esr
 
 # Install Geckodriver
-RUN LATEST_VERSION=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")') && \
+RUN LATEST_VERSION=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | jq -r '.tag_name') && \
+    echo "Downloading Geckodriver version: $LATEST_VERSION" && \
     wget -q "https://github.com/mozilla/geckodriver/releases/download/${LATEST_VERSION}/geckodriver-${LATEST_VERSION}-linux64.tar.gz" && \
-    tar -xzf geckodriver-*.tar.gz && \
+    tar -xzf geckodriver-${LATEST_VERSION}-linux64.tar.gz && \
     chmod +x geckodriver && \
     mv geckodriver /usr/local/bin/ && \
-    rm geckodriver-*.tar.gz
+    rm geckodriver-${LATEST_VERSION}-linux64.tar.gz
 
 # Create Firefox profile directory with correct ownership
 RUN mkdir -p /tmp/firefox-profiles && \
